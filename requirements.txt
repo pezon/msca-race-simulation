@@ -1,17 +1,15 @@
 # basic scientific computing libraries
-!pip install \
-  numpy \
-  matplotlib \
-  pandas \
-  scipy
+numpy
+matplotlib
+pandas
+scipy
 
 # for basic strategy optimization
-!pip install cvxpy
+cvxpy
 
 # for VSE (supervised and RL training and inference)
-!pip install tensorflow
+tensorflow
 
 # for VSE (RL training)
-!pip install \
-  tensorflow-probability \
-  tf-agents 
+tensorflow-probability
+tf-agents
