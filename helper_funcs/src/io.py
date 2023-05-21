@@ -46,6 +46,11 @@ def save_preprocessor(env, save_dir, race):
 
 
 def save_policy_tflite(policy_dir, save_dir, race):
+    """Save policy as TFLite.
+
+    Converts Q Network to TFlite.
+    See [TensorFlow Lite converter](https://www.tensorflow.org/lite/convert) for more details.
+    """
     save_dir.mkdir(exist_ok=True, parents=True)
     converter = tf.lite.TFLiteConverter.from_saved_model(
         str(policy_dir), signature_keys=["action"])
