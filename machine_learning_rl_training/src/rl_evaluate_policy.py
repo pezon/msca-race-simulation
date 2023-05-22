@@ -19,7 +19,7 @@ import numpy as np
 import tensorflow as tf
 import tf_agents.trajectories
 
-import helper_funcs.src.progressbar
+from helper_funcs.src.progressbar import progressbar
 from machine_learning_rl_training.src.rl_environment_single_agent import RaceSimulation
 
 VSE_MODEL_V = os.getenv("VSE_MODEL_V", 2)
@@ -92,7 +92,7 @@ def print_returns_positions(
             if tf_lite_version == 1:
                 action_q = q_net_lite["interpreter"].get_tensor(q_net_lite["output_index"])[0].argmax()
             elif tf_lite_version == 2:
-                action_q = q_net_lite["interpreter"].get_tensor(q_net_lite["output_index"])
+                action_q = q_net_lite["interpreter"].get_tensor(q_net_lite["output_index"])[0]
             if print_lap_decisions:
                 print(f"race {i + 1}: driver = {py_env.idx_driver}, lap = {lap}, action = {action_q}")
 
@@ -111,7 +111,7 @@ def print_returns_positions(
             fcy_returns.append(episode_return)
             fcy_final_positions.append(final_position)
 
-        helper_funcs.src.progressbar.progressbar(i=i + 1, i_total=num_races, prefix='INFO: Progress:')
+        progressbar(i=i + 1, i_total=num_races, prefix='INFO: Progress:')
 
     print('RESULT: Average return (total): %.3f (FCY: %.3f, no FCY: %.3f),'
           ' average position (total): %.1f (FCY: %.1f, no FCY: %.1f),'

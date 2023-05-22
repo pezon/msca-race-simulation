@@ -61,7 +61,13 @@ def save_policy_tflite(policy_dir, save_dir, race):
     return exported_qnet_tflite
 
 
-def evaluate_policy(tf_env, py_env, policy, num_episodes = 3):
+def evaluate_policy(
+    tf_env,
+    py_env,
+    policy,
+    num_episodes = 3,
+    print_lap_decisions: bool = True
+):
     total_return = 0.0
     for i in range(num_episodes):
         episode_return = 0.0
@@ -71,14 +77,16 @@ def evaluate_policy(tf_env, py_env, policy, num_episodes = 3):
             action_step = policy.action(time_step)
             time_step = tf_env.step(action_step.action)
             episode_return += np.mean(time_step.reward)
-            print(f"race {i + 1}: driver = {py_env.idx_driver}, lap = {lap}, action = {action_step}")
+            if print_lap_decisions:
+                print(f"race {i + 1}: driver = {py_env.idx_driver}, lap = {lap}, action = {action_step.numpy()}")
             lap += 1
         total_return += episode_return
         final_position = py_env.race.positions[
            py_env.race.get_last_compl_lap(py_env.idx_driver),
            py_env.idx_driver
         ]
-        print(f"race {i + 1}: driver = {py_env.idx_driver}, final_position = {final_position}")
+        if print_lap_decisions:
+            print(f"race {i + 1}: driver = {py_env.idx_driver}, final_position = {final_position}")
     average_return = total_return / num_episodes
     return average_return
  
