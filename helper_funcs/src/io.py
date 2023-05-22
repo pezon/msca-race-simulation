@@ -78,7 +78,7 @@ def evaluate_policy(
             time_step = tf_env.step(action_step.action)
             episode_return += np.mean(time_step.reward)
             if print_lap_decisions:
-                print(f"race {i + 1}: driver = {py_env.idx_driver}, lap = {lap}, action = {action_step.numpy()}")
+                print(f"race {i + 1}: driver = {py_env.idx_driver}, lap = {lap}, action = {action_step.action[0]}")
             lap += 1
         total_return += episode_return
         final_position = py_env.race.positions[
