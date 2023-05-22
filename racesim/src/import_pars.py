@@ -7,9 +7,9 @@ from pathlib import Path
 def import_pars(
     use_print: bool,
     use_vse: bool,
-    race_params_file: Path,
-    mcs_params_file: Path,
-    vse_path: Path,
+    race_pars_file: Path,
+    mcs_pars_file: Path,
+    vse_path: Path = None,
 ) -> tuple:
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -23,7 +23,7 @@ def import_pars(
     parser = configparser.ConfigParser()
     pars_in = {}
 
-    if not parser.read(str(race_params_file)):
+    if not parser.read(str(race_pars_file)):
         raise RuntimeError("Specified race parameter config file does not exist or is empty!")
 
     pars_in["race_pars"] = json.loads(parser.get("RACE_PARS", "race_pars"))
@@ -67,7 +67,7 @@ def import_pars(
     if use_print:
         print("INFO: Loading MCS parameters...")
 
-    if not parser.read(mcs_params_file):
+    if not parser.read(mcs_pars_file):
         raise RuntimeError("Specified MCS parameter config file does not exist or is empty!")
 
     season = pars_in["race_pars"]["season"]  # get currently simulated season to load the correct parameters
