@@ -1,7 +1,10 @@
+import os
 import numpy as np
 import tensorflow as tf
 import pickle
 import machine_learning
+
+VSE_MODEL_V = os.getenv("VSE_MODEL_V", 2)
 
 
 class VSE_REINFORCEMENT(object):
@@ -43,16 +46,19 @@ class VSE_REINFORCEMENT(object):
 
         # initialize tf lite interpreter
         self.nn_model["interpreter"].allocate_tensors()
-        self.nn_model["input_index"] = self.nn_model["interpreter"].get_input_details()[0]['index']
+        if VSE_MODEL_V == 1:
+            self.nn_model["input_index"] = self.nn_model["interpreter"].get_input_details()[0]['index']
+        elif VSE_MODEL_V == 2:
+            self.nn_model["input_index"] = self.nn_model["interpreter"].get_input_details()[2]['index']
         self.nn_model["output_index"] = self.nn_model["interpreter"].get_output_details()[0]['index']
 
         # get number of available actions for current race (3 actions if there are 2 available dry compounds (2014 and
         # 2015), 4 actions if there are 3 available dry compounds (>= 2016)
         self.no_actions = int(self.nn_model["interpreter"].get_output_details()[0]['shape'][1])
 
-        if self.no_actions not in [3, 4]:
-            raise RuntimeError("RL VSE does not match current race, the number of available actions should be 3 (2014 +"
-                               " 2015) or 4 (>= 2016)!")
+        #if self.no_actions not in [3, 4]:
+        #    raise RuntimeError("RL VSE does not match current race, the number of available actions should be 3 (2014 +"
+        #                       " 2015) or 4 (>= 2016)!")
 
     # ------------------------------------------------------------------------------------------------------------------
     # GETTERS / SETTERS ------------------------------------------------------------------------------------------------
@@ -167,7 +173,10 @@ class VSE_REINFORCEMENT(object):
             action_q_vals[idx_driver] = self.nn_model["interpreter"].get_tensor(self.nn_model["output_index"])[0]
 
             # use action with highest Q value
-            action = action_q_vals[idx_driver].argmax()
+            if VSE_MODEL_V == 1:
+                action = action_q_vals[idx_driver].argmax()
+            elif VSE_MODEL_V == 2:
+                action = action_q_vals[idx_driver]
 
             if action != 0:
                 next_compounds[idx_driver] = param_dry_compounds[action - 1]

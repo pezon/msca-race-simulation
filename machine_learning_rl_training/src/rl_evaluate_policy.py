@@ -13,12 +13,16 @@ The functions in this file are related to the reinforcement learning (RL) approa
 Engineer (VSE) within the race simulation to make reasonable strategy decisions. The main script is located in
 main_train_rl_agent_dqn.py.
 """
+import os
 
-from machine_learning_rl_training.src.rl_environment_single_agent import RaceSimulation
-import helper_funcs.src.progressbar
 import numpy as np
 import tensorflow as tf
 import tf_agents.trajectories
+
+import helper_funcs.src.progressbar
+from machine_learning_rl_training.src.rl_environment_single_agent import RaceSimulation
+
+VSE_MODEL_V = os.getenv("VSE_MODEL_V", 2)
 
 
 def convert_time_step(time_step) -> tf_agents.trajectories.time_step.TimeStep:
@@ -35,10 +39,14 @@ def convert_time_step(time_step) -> tf_agents.trajectories.time_step.TimeStep:
     return time_step
 
 
-def print_returns_positions(py_env: RaceSimulation,
-                            num_races: int,
-                            tf_lite_path: str,
-                            vse_others: str = None):
+def print_returns_positions(
+        py_env: RaceSimulation,
+        num_races: int,
+        tf_lite_path: str,
+        vse_others: str = None,
+        tf_lite_version: int = VSE_MODEL_V,
+        print_lap_decisions: bool = True
+):
     """
     This function calculates the returns and final positions with a given q_network as tf-lite over num_races (episodes)
     and distinguishes the returns and positions of races with FCY phases and races without FCY phases.
@@ -54,7 +62,10 @@ def print_returns_positions(py_env: RaceSimulation,
     # initialize TF lite q-network
     q_net_lite = {"interpreter": tf.lite.Interpreter(model_path=tf_lite_path)}
     q_net_lite["interpreter"].allocate_tensors()
-    q_net_lite["input_index"] = q_net_lite["interpreter"].get_input_details()[0]['index']
+    if tf_lite_version == 1:
+        q_net_lite["input_index"] = q_net_lite["interpreter"].get_input_details()[0]['index']
+    elif tf_lite_version == 2:
+        q_net_lite["input_index"] = q_net_lite["interpreter"].get_input_details()[2]['index']
     q_net_lite["output_index"] = q_net_lite["interpreter"].get_output_details()[0]['index']
 
     fcy_returns = []
@@ -69,6 +80,7 @@ def print_returns_positions(py_env: RaceSimulation,
         time_step = py_env.reset()
         episode_return = 0.0
 
+        lap = 1
         while not time_step.is_last():
             # set NN input
             q_net_lite["interpreter"].set_tensor(q_net_lite["input_index"], convert_time_step(time_step).observation)
@@ -77,12 +89,20 @@ def print_returns_positions(py_env: RaceSimulation,
             q_net_lite["interpreter"].invoke()
 
             # fetch NN output
-            action_q = q_net_lite["interpreter"].get_tensor(q_net_lite["output_index"])[0].argmax()
+            if tf_lite_version == 1:
+                action_q = q_net_lite["interpreter"].get_tensor(q_net_lite["output_index"])[0].argmax()
+            elif tf_lite_version == 2:
+                action_q = q_net_lite["interpreter"].get_tensor(q_net_lite["output_index"])
+            if print_lap_decisions:
+                print(f"race {i + 1}: driver = {py_env.idx_driver}, lap = {lap}, action = {action_q}")
 
             time_step = py_env.step(action_q)
             episode_return += time_step.reward
+            lap += 1
 
         final_position = py_env.race.positions[py_env.race.get_last_compl_lap(py_env.idx_driver), py_env.idx_driver]
+        if print_lap_decisions:
+            print(f"race {i + 1}: driver = {py_env.idx_driver}, final_position = {final_position}")
 
         if not py_env.race.fcy_data['phases']:
             nofcy_returns.append(episode_return)
