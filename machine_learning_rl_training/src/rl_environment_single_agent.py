@@ -18,9 +18,9 @@ import random
 from pathlib import Path
 
 import numpy as np
-from tf_agents import environments
-from tf_agents import specs
-from tf_agents import trajectories
+import tf_agents.environments
+import tf_agents.specs
+import tf_agents.trajectories
 
 import machine_learning
 import racesim
