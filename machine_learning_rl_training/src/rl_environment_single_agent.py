@@ -13,15 +13,17 @@ The functions in this file are related to the reinforcement learning (RL) approa
 Engineer (VSE) within the race simulation to make reasonable strategy decisions. The main script is located in
 main_train_rl_agent_dqn.py.
 """
-
-import racesim
-import machine_learning
 import math
 import random
+from pathlib import Path
+
 import numpy as np
-import tf_agents.environments
-import tf_agents.specs
-import tf_agents.trajectories
+from tf_agents import environments
+from tf_agents import specs
+from tf_agents import trajectories
+
+import machine_learning
+import racesim
 
 
 class RaceSimulation(tf_agents.environments.py_environment.PyEnvironment):
@@ -107,12 +109,15 @@ class RaceSimulation(tf_agents.environments.py_environment.PyEnvironment):
     # CONSTRUCTOR ------------------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
 
-    def __init__(self,
-                 race_pars_file: str,
-                 mcs_pars_file: str,
-                 vse_type: str = 'supervised',
-                 use_prob_infl: bool = True,
-                 create_rand_events: bool = True) -> None:
+    def __init__(
+            self,
+            race_pars_file: str,
+            mcs_pars_file: str,
+            vse_type: str = 'supervised',
+            use_prob_infl: bool = True,
+            create_rand_events: bool = True,
+            vse_paths: list[Path] = None
+    ) -> None:
 
         # save race simulation parameters ------------------------------------------------------------------------------
         self.race_pars_file = race_pars_file
@@ -120,6 +125,7 @@ class RaceSimulation(tf_agents.environments.py_environment.PyEnvironment):
         self.vse_type = vse_type
         self.use_prob_infl = use_prob_infl
         self.create_rand_events = create_rand_events
+        self.vse_paths = vse_paths
 
         # race simulation ----------------------------------------------------------------------------------------------
         # parameters for the race object and driver_initials, created from the pars_files in the create_race() method
@@ -281,10 +287,11 @@ class RaceSimulation(tf_agents.environments.py_environment.PyEnvironment):
                     "use_plot": False}
 
         # load and change parameters -----------------------------------------------------------------------------------
-        self.pars_in, vse_paths = racesim.src.import_pars.import_pars(use_print=False,
-                                                                      use_vse=True,
-                                                                      race_pars_file=self.race_pars_file,
-                                                                      mcs_pars_file=self.mcs_pars_file)
+        self.pars_in, _ = racesim.src.import_pars.import_pars(
+            use_print=False,
+            use_vse=False,
+            race_pars_file=self.race_pars_file,
+            mcs_pars_file=self.mcs_pars_file)
 
         # set vse_type (-> determines which VSE type is used for the drivers)
         for driver in self.pars_in['vse_pars']['vse_type']:
@@ -310,7 +317,7 @@ class RaceSimulation(tf_agents.environments.py_environment.PyEnvironment):
                                                           tireset_pars=self.pars_in["tireset_pars"],
                                                           track_pars=self.pars_in["track_pars"],
                                                           vse_pars=self.pars_in["vse_pars"],
-                                                          vse_paths=vse_paths,
+                                                          vse_paths=self.vse_paths,
                                                           use_prob_infl=sim_opts["use_prob_infl"],
                                                           create_rand_events=sim_opts["create_rand_events"],
                                                           monte_carlo_pars=self.pars_in["monte_carlo_pars"],
