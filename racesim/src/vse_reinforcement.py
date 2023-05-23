@@ -178,7 +178,7 @@ class VSE_REINFORCEMENT(object):
             if VSE_MODEL_V == 1:
                 action = action_q_vals[idx_driver].argmax()
             elif VSE_MODEL_V == 2:
-                action = action_q_vals[idx_driver][0]
+                action = int(action_q_vals[idx_driver][0])
             print("action:", action)
 
             if action != 0:
