@@ -170,16 +170,16 @@ class VSE_REINFORCEMENT(object):
             self.nn_model["interpreter"].invoke()
 
             # fetch NN output
-            print("output:", self.nn_model["interpreter"].get_tensor(self.nn_model["output_index"]))
+            # print("output:", self.nn_model["interpreter"].get_tensor(self.nn_model["output_index"]))
             action_q_vals[idx_driver] = self.nn_model["interpreter"].get_tensor(self.nn_model["output_index"])[0]
-            print(f"action_q_vals:", action_q_vals[idx_driver])
+            # print(f"action_q_vals:", action_q_vals[idx_driver])
 
             # use action with highest Q value
             if VSE_MODEL_V == 1:
                 action = action_q_vals[idx_driver].argmax()
             elif VSE_MODEL_V == 2:
                 action = int(action_q_vals[idx_driver][0])
-            print("action:", action)
+            # print("action:", action)
 
             if action != 0:
                 next_compounds[idx_driver] = param_dry_compounds[action - 1]
@@ -203,8 +203,8 @@ class VSE_REINFORCEMENT(object):
                             next_compounds[idx_driver] = param_dry_compounds[action - 1]
                             break
 
-                    print("WARNING: Had to enforce a pit stop or another tire compound for reinforcement VSE above"
-                          " 95%% race progress (driver at index %i of reinforcement drivers)!" % idx_driver)
+                    print(f"WARNING: Had to enforce a pit stop or another tire compound for reinforcement VSE above"
+                           " 95%% race progress (driver at index {idx_driver} of reinforcement drivers)!")
 
         return next_compounds
 
