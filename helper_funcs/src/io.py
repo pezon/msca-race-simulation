@@ -73,6 +73,7 @@ def evaluate_policy(
         episode_return = 0.0
         time_step = tf_env.reset()
         lap = 1
+        # actions = []
         while not time_step.is_last():
             action_step = policy.action(time_step)
             time_step = tf_env.step(action_step.action)
@@ -82,6 +83,7 @@ def evaluate_policy(
                     py_env.race.get_last_compl_lap(py_env.idx_driver),
                     py_env.idx_driver
                 ]
+                # action.append(action_step.action[0])
                 print(f"race {i + 1}: driver = {py_env.idx_driver}, lap = {lap}, pos = {position}, action = {action_step.action[0]}")
             lap += 1
         total_return += episode_return
