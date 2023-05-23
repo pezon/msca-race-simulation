@@ -171,12 +171,14 @@ class VSE_REINFORCEMENT(object):
 
             # fetch NN output
             action_q_vals[idx_driver] = self.nn_model["interpreter"].get_tensor(self.nn_model["output_index"])[0]
+            print(f"action_q_vals:", action_q_vals[idx_driver])
 
             # use action with highest Q value
             if VSE_MODEL_V == 1:
                 action = action_q_vals[idx_driver].argmax()
             elif VSE_MODEL_V == 2:
-                action = action_q_vals[idx_driver]
+                action = action_q_vals[idx_driver][0]
+            print("action:", action)
 
             if action != 0:
                 next_compounds[idx_driver] = param_dry_compounds[action - 1]
@@ -190,7 +192,7 @@ class VSE_REINFORCEMENT(object):
                              or next_compounds[idx_driver] == cur_compounds[idx_driver]):
 
                     # get indices of actions sorted from best to worst action (i.e. from highest to lowest Q value)
-                    action_list_sorted = list(np.argsort(-action_q_vals[idx_driver]))
+                    action_list_sorted = list(np.array([1, 2, 3]))
 
                     # loop through available actions
                     for action in action_list_sorted:
