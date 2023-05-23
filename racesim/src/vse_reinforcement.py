@@ -54,7 +54,7 @@ class VSE_REINFORCEMENT(object):
 
         # get number of available actions for current race (3 actions if there are 2 available dry compounds (2014 and
         # 2015), 4 actions if there are 3 available dry compounds (>= 2016)
-        self.no_actions = int(self.nn_model["interpreter"].get_output_details()[0]['shape'][1])
+        self.no_actions = 4 #  int(self.nn_model["interpreter"].get_output_details()[0]['shape'][1])
 
         #if self.no_actions not in [3, 4]:
         #    raise RuntimeError("RL VSE does not match current race, the number of available actions should be 3 (2014 +"
