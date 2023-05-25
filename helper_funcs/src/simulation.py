@@ -131,6 +131,7 @@ def plot_position_changes_from_sim(
     ax = None,
     drivers = None,
     n_laps = None,
+    realstrat = None,
 ):
     for driver in drivers:
         positions = sim["driverinfo"][driver]["positions"]
@@ -141,7 +142,8 @@ def plot_position_changes_from_sim(
             np.arange(1, at_lap + 1),
             positions[0:at_lap],
             label=driver,
-            color=color)
+            color=color,
+            style="dashed" if driver in realstrat else "solid")
     ax.set_xlim([1, n_laps])
     ax.set_ylim([20.5, 0.5])
     ax.set_yticks([1, 5, 10, 15, 20])
@@ -154,7 +156,7 @@ def plot_position_changes_from_sim(
     ax.legend(loc="center left", bbox_to_anchor=(1, 0.5))
 
 
-def plot_tire_strategy_from_sim(sim, at_lap = 1, ax = None, drivers = None, n_laps = None):
+def plot_tire_strategy_from_sim(sim, at_lap = 1, ax = None, drivers = None, n_laps = None, realstrat = None):
     # create stints
     stints = []
     for driver in drivers:
@@ -188,7 +190,7 @@ def plot_tire_strategy_from_sim(sim, at_lap = 1, ax = None, drivers = None, n_la
                 width=row["StintLength"],
                 left=previous_stint_end,
                 color=fastf1.plotting.COMPOUND_COLORS[row["Compound"]],
-                edgecolor="black",
+                edgecolor="gray" if driver in realstrat else "black",
                 fill=True
             )
             previous_stint_end += row["StintLength"]
@@ -205,14 +207,14 @@ def plot_tire_strategy_from_sim(sim, at_lap = 1, ax = None, drivers = None, n_la
     return ax
 
 
-def make_frame(t, sim, fps, n_laps, ax_tire, ax_pos, fig, drivers):
+def make_frame(t, sim, fps, n_laps, ax_tire, ax_pos, fig, drivers, realstrat):
     lap = int(t * fps)
     # clear plot
     ax_tire.clear()
     ax_pos.clear()
     # plot again
-    plot_tire_strategy_from_sim(sim, at_lap=lap, ax=ax_tire, drivers=drivers, n_laps=n_laps)
-    plot_position_changes_from_sim(sim, at_lap=lap, ax=ax_pos, drivers=drivers, n_laps=n_laps)
+    plot_tire_strategy_from_sim(sim, at_lap=lap, ax=ax_tire, drivers=drivers, n_laps=n_laps, realstrat=realstrat)
+    plot_position_changes_from_sim(sim, at_lap=lap, ax=ax_pos, drivers=drivers, n_laps=n_laps, realstrat=realstrat)
     fig.suptitle("Shanghai Grand Prix 2019 Simulation")
     plt.tight_layout()
     # be kind to the api
