@@ -26,7 +26,10 @@ TIRE_MAP = {
 def mcs_analysis(
         race_results: list,
         use_print_result: bool,
-        use_plot: bool
+        use_plot: bool,
+        starting_grid: dict,
+        finish_grid: dict,
+        realstrategy: list,
 ):
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -91,7 +94,7 @@ def mcs_analysis(
         subplots_per_row = 3
         no_rows = int(np.ceil(no_drivers / subplots_per_row))
 
-        fig, axes = plt.subplots(no_rows, subplots_per_row, sharex="all", sharey="all")
+        fig, axes = plt.subplots(no_rows, subplots_per_row, sharex="all", sharey="all", figsize=(16.0, 24.0))
 
         # create one subplot per driver
         cur_col = 0
@@ -102,10 +105,21 @@ def mcs_analysis(
             axes[cur_row][cur_col].\
                 bar(range(1, no_drivers + 1),
                     list(race_results_df.iloc[idx_driver] / no_sim_runs * 100.0),
-                    tick_label=range(1, no_drivers + 1))
+                    tick_label=range(1, no_drivers + 1),
+                    alpha=0.5 if driver_initials[idx_driver] in realstrategy else 1)
+            
+            # track driver initial position
+            axes[cur_row][cur_col].axvline(
+                starting_grid[driver_initials[idx_driver]],
+                color="white", linestyle="solid", linewidth=2)
+            
+            # track driver finishing position
+            axes[cur_row][cur_col].axvline(
+                finish_grid.get(driver_initials[idx_driver], 20),
+                color="gray", linestyle="dashed", linewidth=2)
 
             # add driver initials above plot
-            axes[cur_row][cur_col].set_title(driver_initials[idx_driver])
+            axes[cur_row][cur_col].set_title(driver_initials[idx_driver], fontsize=10)
 
             # set ylabel for first plot per row
             if cur_col == 0:
@@ -143,7 +157,7 @@ def plot_position_changes_from_sim(
             positions[0:at_lap],
             label=driver,
             color=color,
-            style="dashed" if driver in realstrat else "solid")
+            linestyle="dashed" if driver in realstrat else "solid")
     ax.set_xlim([1, n_laps])
     ax.set_ylim([20.5, 0.5])
     ax.set_yticks([1, 5, 10, 15, 20])
@@ -205,42 +219,6 @@ def plot_tire_strategy_from_sim(sim, at_lap = 1, ax = None, drivers = None, n_la
     ax.spines["right"].set_visible(False)
     ax.spines["left"].set_visible(False)
     return ax
-
-
-def make_frame(t, sim, fps, n_laps, ax_tire, ax_pos, fig, drivers, realstrat):
-    lap = int(t * fps)
-    # clear plot
-    ax_tire.clear()
-    ax_pos.clear()
-    # plot again
-    plot_tire_strategy_from_sim(sim, at_lap=lap, ax=ax_tire, drivers=drivers, n_laps=n_laps, realstrat=realstrat)
-    plot_position_changes_from_sim(sim, at_lap=lap, ax=ax_pos, drivers=drivers, n_laps=n_laps, realstrat=realstrat)
-    fig.suptitle("Shanghai Grand Prix 2019 Simulation")
-    plt.tight_layout()
-    # be kind to the api
-    sleep(0.05)
-    return mplfig_to_npimage(fig)
-
-
-def create_simulation_video(sim, drivers, n_laps = None, fps = FPS, duration = DURATION):
-        # plot
-        fig, (ax_tire, ax_pos) = plt.subplots(1, 2, figsize=(16.0, 6.0))
-
-        # creating animation
-        animation = VideoClip(
-            partial(
-                make_frame,
-                fps=fps,
-                sim=sim,
-                n_laps=n_laps,
-                ax_tire=ax_tire,
-                ax_pos=ax_pos,
-                fig=fig,
-                drivers=drivers),
-            duration=duration)
-        return animation
-        # displaying animation with auto play and looping
-        # animation.ipython_display(fps=FPS, loop=True, autoplay=True)
 
 
 def plot_position_changes_from_api(laps, at_lap = None, ax = None, drivers = None):
@@ -305,6 +283,42 @@ def plot_tire_strategy_from_api(laps, at_lap = None, ax = None, drivers = None):
     ax.spines["left"].set_visible(False)
     return ax
 
+
+def make_frame(t, sim, fps, n_laps, ax_tire, ax_pos, fig, drivers, realstrat):
+    lap = int(t * fps)
+    # clear plot
+    ax_tire.clear()
+    ax_pos.clear()
+    # plot again
+    plot_tire_strategy_from_sim(sim, at_lap=lap, ax=ax_tire, drivers=drivers, n_laps=n_laps, realstrat=realstrat)
+    plot_position_changes_from_sim(sim, at_lap=lap, ax=ax_pos, drivers=drivers, n_laps=n_laps, realstrat=realstrat)
+    fig.suptitle("Shanghai Grand Prix 2019 Simulation")
+    plt.tight_layout()
+    # be kind to the api
+    sleep(0.05)
+    return mplfig_to_npimage(fig)
+
+
+def create_simulation_video(sim, drivers, n_laps = None, fps = FPS, duration = DURATION, realstrat=None):
+        # plot
+        fig, (ax_tire, ax_pos) = plt.subplots(1, 2, figsize=(16.0, 6.0))
+
+        # creating animation
+        animation = VideoClip(
+            partial(
+                make_frame,
+                fps=fps,
+                sim=sim,
+                n_laps=n_laps,
+                ax_tire=ax_tire,
+                ax_pos=ax_pos,
+                fig=fig,
+                drivers=drivers,
+                realstrat=realstrat),
+            duration=duration)
+        return animation
+        # displaying animation with auto play and looping
+        # animation.ipython_display(fps=FPS, loop=True, autoplay=True)
 
 
 # testing --------------------------------------------------------------------------------------------------------------
