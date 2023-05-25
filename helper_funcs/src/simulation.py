@@ -220,7 +220,7 @@ def make_frame(t, sim, fps, n_laps, ax_tire, ax_pos, fig, drivers):
     return mplfig_to_npimage(fig)
 
 
-def create_simulation_video(sim, drivers):
+def create_simulation_video(sim, drivers, n_laps = None, fps = FPS, duration = DURATION):
         # plot
         fig, (ax_tire, ax_pos) = plt.subplots(1, 2, figsize=(16.0, 6.0))
 
@@ -228,14 +228,14 @@ def create_simulation_video(sim, drivers):
         animation = VideoClip(
             partial(
                 make_frame,
-                fps=FPS,
+                fps=fps,
                 sim=sim,
-                n_laps=N_LAPS,
+                n_laps=n_laps,
                 ax_tire=ax_tire,
                 ax_pos=ax_pos,
                 fig=fig,
                 drivers=drivers),
-            duration=DURATION)
+            duration=duration)
         return animation
         # displaying animation with auto play and looping
         # animation.ipython_display(fps=FPS, loop=True, autoplay=True)
