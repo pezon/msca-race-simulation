@@ -13,3 +13,9 @@ tensorflow
 # for VSE (RL training)
 tensorflow-probability
 tf-agents
+
+# for plotting against real data
+fastf1
+
+# for movies
+moviepy
